@@ -1,0 +1,19 @@
+{
+  "name": "video-maker",
+  "version": "1.0.0",
+  "description": "Projeto Open Source para fazer vídeos automatizados",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mixtli-Botelho/video-maker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mixtli-Botelho/video-maker/issues"
+  },
+  "homepage": "https://github.com/Mixtli-Botelho/video-maker#readme"
+}
