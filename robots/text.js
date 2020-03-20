@@ -1,12 +1,31 @@
 // Importa o módulo do marketplace "Algorithmia"
 const algorithmia = require('algorithmia')
+// Importa o "código chave" para utiliação de códigos da Algorithmia guardada no arquivo "algorithmia.json"
 const algorithmiaApiKey = require('../credentials/algorithmia.json').apiKey
+// Imoprta uma biblioteca do Node de "detecção de limite de sentença"
 const sentenceBoundaryDetection = require('sbd')
 
+// Importa o "código chave" para a utilização das APIs do Watson
+const watsonApiKey = require("../credentials/watson-nlu.json").apikey
+// Importa o submódulo "natural-language-understanding" para a análise natural das frases
+const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js')
+
+// instância que pede uma "apiKey, version, url" (https://www.npmjs.com/package/watson-developer-cloud)
+var nlu = new NaturalLanguageUnderstandingV1({
+    iam_apikey: watsonApiKey,
+    version: '2018-04-05',
+    url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
+})
+
+
+// início do robô de texto
 async function robot(content) {
+
     await fetchContentFromWikipedia(content)
     sanitizeContent(content)
     breakContentIntoSentences(content)
+    limitMaximumSentences(content)
+    await fetchKeywordsOfAllSentences(content)
 
     async function fetchContentFromWikipedia(content) {
         // Autenticação no "Algorithmia" com uma "API KEY"
@@ -21,7 +40,7 @@ async function robot(content) {
         content.sourceContentOriginal = wikipediaContent.content
     }
 
-    function sanitizeContent(content) {
+    function sanitizeContent(content) {     
         const withoutBlankLinesAndMarkdown = removeBlankLinesAndMarkdown(content.sourceContentOriginal)
         const withoutDatesInParentheses = removeDatesInParentheses(withoutBlankLinesAndMarkdown)
 
@@ -54,10 +73,41 @@ async function robot(content) {
         sentences.forEach((sentence) => {
             content.sentences.push({
                 text: sentence,
-                keyword: [],
+                keywords: [],
                 images: []
             })
         })
+    }
+
+    function limitMaximumSentences(content) {
+        content.sentences = content.sentences.slice(0, content.maximumSentences)
+    }
+
+    async function fetchKeywordsOfAllSentences(content) {
+        for (const sentence of content.sentences) {
+            sentence.keywords = await fetchWatsonAndReturnKeyWords(sentence.text)
+        }
+    } 
+
+    async function fetchWatsonAndReturnKeyWords(sentence) {
+        return new Promise((resolve, reject) => {
+            nlu.analyze({
+                text: sentence,
+                features: {
+                    keywords: {}
+                }
+            }, (error, response) => {
+                    if (error) {
+                        throw error
+                    }
+    
+                    const keywords = response.keywords.map((keyword) => {
+                        return keyword.text
+                    })
+    
+                    resolve(keywords)
+                })
+        })  
     }
 }
 
