@@ -11,21 +11,26 @@ const watsonApiKey = require("../credentials/watson-nlu.json").apikey
 const NaturalLanguageUnderstandingV1 = require('watson-developer-cloud/natural-language-understanding/v1.js')
 
 // instância que pede uma "apiKey, version, url" (https://www.npmjs.com/package/watson-developer-cloud)
-var nlu = new NaturalLanguageUnderstandingV1({
+const nlu = new NaturalLanguageUnderstandingV1({
     iam_apikey: watsonApiKey,
     version: '2018-04-05',
     url: 'https://gateway.watsonplatform.net/natural-language-understanding/api/'
 })
 
+// Importa o modulo "state.js" para gravar os dados em um arquivo do tipo ".json"
+const state = require('./state.js') 
 
 // início do robô de texto
-async function robot(content) {
+async function robot() {
+    const content = state.load()
 
-    await fetchContentFromWikipedia(content)
-    sanitizeContent(content)
+    await fetchContentFromWikipedia(content) // Busca o conteúdo da Wikipedia
+    sanitizeContent(content) // Limpa o conteúdo pesquisado, tirando caracteres especiais (do Markdown)
     breakContentIntoSentences(content)
     limitMaximumSentences(content)
     await fetchKeywordsOfAllSentences(content)
+
+    state.save(content)
 
     async function fetchContentFromWikipedia(content) {
         // Autenticação no "Algorithmia" com uma "API KEY"
