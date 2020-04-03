@@ -9,8 +9,8 @@ const robots = {
 // Função para iniciar tudo
 async function start() {
     
-    // robots.input() // Executa o conteúdo do módulo "input.js"
-    // await robots.text() // Executa o conteúdo do módulo "text.js"
+    robots.input() // Executa o conteúdo do módulo "input.js"
+    await robots.text() // Executa o conteúdo do módulo "text.js"
     await robots.image() // Executa o conteúdo do módulo "image.js"
 
     const content = robots.state.load() // Pega o resultado do método "load()" do módulo "state.js"
